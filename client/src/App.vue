@@ -402,6 +402,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  overflow: visible;
 }
 
 /* Main content */
