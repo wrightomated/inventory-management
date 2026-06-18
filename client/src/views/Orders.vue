@@ -8,6 +8,54 @@
     <div v-if="loading" class="loading">{{ t('common.loading') }}</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else>
+
+      <!-- Submitted Restocking Orders — only shown when at least one exists -->
+      <div v-if="restockingOrders.length > 0" class="card restocking-card">
+        <div class="card-header">
+          <h3 class="card-title">Submitted Restocking Orders ({{ restockingOrders.length }})</h3>
+        </div>
+        <div class="table-container">
+          <table class="orders-table restock-orders-table">
+            <thead>
+              <tr>
+                <th class="col-order-number">Order #</th>
+                <th class="col-date">Submitted Date</th>
+                <th class="col-items">Items</th>
+                <th class="col-value">Total Cost</th>
+                <th class="col-date">Expected Delivery</th>
+                <th class="col-lead">Lead Time</th>
+                <th class="col-status">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="ro in restockingOrders" :key="ro.id">
+                <td class="col-order-number"><strong>{{ ro.order_number }}</strong></td>
+                <td class="col-date">{{ formatDate(ro.submitted_date) }}</td>
+                <td class="col-items">
+                  <details class="items-details">
+                    <summary class="items-summary">
+                      {{ ro.items.length }} item{{ ro.items.length !== 1 ? 's' : '' }}
+                    </summary>
+                    <div class="items-dropdown">
+                      <div v-for="item in ro.items" :key="item.sku" class="item-entry">
+                        <span class="item-name">{{ item.product_name }}</span>
+                        <span class="item-meta">Qty: {{ item.quantity }} @ {{ formatCurrency(item.unit_cost) }}</span>
+                      </div>
+                    </div>
+                  </details>
+                </td>
+                <td class="col-value"><strong>{{ formatCurrency(ro.total_cost) }}</strong></td>
+                <td class="col-date">{{ formatDate(ro.expected_delivery) }}</td>
+                <td class="col-lead">14 days</td>
+                <td class="col-status">
+                  <span :class="['badge', getRestockStatusClass(ro.status)]">{{ ro.status }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="stats-grid">
         <div class="stat-card success">
           <div class="stat-label">{{ t('status.delivered') }}</div>
@@ -95,6 +143,7 @@ export default {
     const loading = ref(true)
     const error = ref(null)
     const orders = ref([])
+    const restockingOrders = ref([])
 
     // Use shared filters
     const {
@@ -108,8 +157,12 @@ export default {
     const loadOrders = async () => {
       try {
         loading.value = true
+        // Fetch regular orders and restocking orders in parallel
         const filters = getCurrentFilters()
-        const fetchedOrders = await api.getOrders(filters)
+        const [fetchedOrders, fetchedRestocking] = await Promise.all([
+          api.getOrders(filters),
+          api.getRestockingOrders()
+        ])
 
         // Sort orders by order_date (earliest first)
         orders.value = fetchedOrders.sort((a, b) => {
@@ -117,6 +170,7 @@ export default {
           const dateB = new Date(b.order_date)
           return dateA - dateB
         })
+        restockingOrders.value = fetchedRestocking
       } catch (err) {
         error.value = 'Failed to load orders: ' + err.message
       } finally {
@@ -153,6 +207,14 @@ export default {
       })
     }
 
+    const formatCurrency = (value) =>
+      value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+
+    const getRestockStatusClass = (status) => {
+      const map = { 'Processing': 'warning', 'Delivered': 'success' }
+      return map[status] || 'info'
+    }
+
     onMounted(loadOrders)
 
     return {
@@ -160,9 +222,12 @@ export default {
       loading,
       error,
       orders,
+      restockingOrders,
       getOrdersByStatus,
       getOrderStatusClass,
+      getRestockStatusClass,
       formatDate,
+      formatCurrency,
       currencySymbol,
       translateProductName,
       translateCustomerName
@@ -172,6 +237,14 @@ export default {
 </script>
 
 <style scoped>
+.restocking-card {
+  border-top: 3px solid #2563eb;
+}
+
+.restock-orders-table .col-lead {
+  width: 110px;
+}
+
 /* Fixed table layout to prevent column shifting */
 .orders-table {
   table-layout: fixed;
