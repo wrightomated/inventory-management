@@ -282,7 +282,7 @@ export default {
 .budget-display {
   font-size: 2.25rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-primary);
   letter-spacing: -0.025em;
 }
 
@@ -299,12 +299,12 @@ export default {
   justify-content: space-between;
   max-width: 600px;
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .card-subtitle {
   font-size: 0.813rem;
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 400;
 }
 
@@ -324,16 +324,16 @@ export default {
 .col-total { width: 130px; }
 
 .restock-table thead {
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--bg-surface-raised);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-strong);
 }
 
 .restock-table th {
   text-align: left;
   padding: 0.5rem 0.75rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--text-muted);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -341,8 +341,8 @@ export default {
 
 .restock-table td {
   padding: 0.5rem 0.75rem;
-  border-top: 1px solid #f1f5f9;
-  color: #334155;
+  border-top: 1px solid var(--border);
+  color: var(--text-primary);
   font-size: 0.875rem;
 }
 
@@ -351,15 +351,15 @@ export default {
 }
 
 .restock-table tbody tr:hover {
-  background: #f8fafc;
+  background: var(--bg-surface-hover);
 }
 
 .row-selected {
-  background: #eff6ff;
+  background: var(--info-dim);
 }
 
 .row-selected:hover {
-  background: #dbeafe !important;
+  background: rgba(56, 139, 253, 0.25) !important;
 }
 
 /* Dim rows that would push over budget */
@@ -370,8 +370,8 @@ export default {
 .gap-badge {
   display: inline-block;
   padding: 0.188rem 0.5rem;
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--warning-dim);
+  color: var(--warning);
   border-radius: 4px;
   font-size: 0.813rem;
   font-weight: 600;
@@ -380,14 +380,14 @@ export default {
 code {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 0.813rem;
-  color: #475569;
+  color: var(--text-muted);
 }
 
 /* Empty state */
 .empty-state {
   padding: 2rem;
   text-align: center;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.938rem;
 }
 
@@ -405,15 +405,15 @@ code {
 
 .summary-stat {
   padding: 1rem;
-  background: #f8fafc;
+  background: var(--bg-surface-raised);
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
 }
 
 .summary-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.5rem;
@@ -422,7 +422,7 @@ code {
 .summary-value {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-primary);
   letter-spacing: -0.025em;
 }
 
@@ -460,8 +460,8 @@ code {
 
 .success-message {
   padding: 0.625rem 1rem;
-  background: #d1fae5;
-  color: #065f46;
+  background: var(--success-dim);
+  color: var(--success);
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;

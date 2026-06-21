@@ -403,6 +403,8 @@ body {
   align-items: center;
   gap: 0.75rem;
   overflow: visible;
+  /* Prevent footer from compressing when sidebar content is tall */
+  flex-shrink: 0;
 }
 
 /* Main content */

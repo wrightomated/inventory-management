@@ -1,6 +1,7 @@
 <template>
   <div class="language-switcher">
     <button
+      ref="buttonRef"
       class="language-button"
       @click="toggleDropdown"
       @blur="handleBlur"
@@ -30,27 +31,29 @@
       </svg>
     </button>
 
-    <div v-if="isDropdownOpen" class="dropdown-menu">
-      <button
-        v-for="locale in availableLocales"
-        :key="locale"
-        class="dropdown-item"
-        :class="{ active: currentLocale === locale }"
-        @mousedown.prevent="selectLanguage(locale)"
-      >
-        <span class="language-name">{{ getLanguageName(locale) }}</span>
-        <svg
-          v-if="currentLocale === locale"
-          width="18"
-          height="18"
-          viewBox="0 0 18 18"
-          fill="none"
-          class="check-icon"
+    <Teleport to="body">
+      <div v-if="isDropdownOpen" class="dropdown-menu" :style="dropdownStyle">
+        <button
+          v-for="locale in availableLocales"
+          :key="locale"
+          class="dropdown-item"
+          :class="{ active: currentLocale === locale }"
+          @mousedown.prevent="selectLanguage(locale)"
         >
-          <path d="M4 9L7.5 12.5L14 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </div>
+          <span class="language-name">{{ getLanguageName(locale) }}</span>
+          <svg
+            v-if="currentLocale === locale"
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            class="check-icon"
+          >
+            <path d="M4 9L7.5 12.5L14 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -61,6 +64,8 @@ import { useI18n } from '../composables/useI18n'
 const { currentLocale, setLocale, availableLocales, localeName } = useI18n()
 
 const isDropdownOpen = ref(false)
+const buttonRef = ref(null)
+const dropdownStyle = ref({})
 
 const languageNames = {
   en: 'English',
@@ -72,6 +77,16 @@ const getLanguageName = (locale) => {
 }
 
 const toggleDropdown = () => {
+  if (!isDropdownOpen.value) {
+    // Calculate position before opening so the dropdown appears in the right place
+    const rect = buttonRef.value.getBoundingClientRect()
+    dropdownStyle.value = {
+      position: 'fixed',
+      bottom: `${window.innerHeight - rect.top}px`,
+      left: `${rect.left}px`,
+      zIndex: 1000
+    }
+  }
   isDropdownOpen.value = !isDropdownOpen.value
 }
 
@@ -96,34 +111,35 @@ const selectLanguage = (locale) => {
 .language-button {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.875rem;
-  background: white;
-  border: 1px solid #e2e8f0;
+  gap: 0.375rem;
+  padding: 0.5rem 0.625rem;
+  background: transparent;
+  border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
   font-size: 0.875rem;
-  color: #334155;
+  color: var(--text-muted);
 }
 
 .language-button:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: var(--bg-surface-hover);
+  border-color: #30363d;
 }
 
 .globe-icon {
-  color: #64748b;
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 
+/* Hide text label — icon-only in sidebar footer */
 .language-label {
-  font-weight: 500;
+  display: none;
 }
 
 .chevron {
-  color: #64748b;
+  color: var(--text-muted);
   transition: transform 0.2s ease;
   flex-shrink: 0;
 }
@@ -133,15 +149,11 @@ const selectLanguage = (locale) => {
 }
 
 .dropdown-menu {
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  right: 0;
   min-width: 160px;
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
   overflow: hidden;
 }
 
@@ -160,16 +172,16 @@ const selectLanguage = (locale) => {
   font-family: inherit;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #334155;
+  color: var(--text-primary);
 }
 
 .dropdown-item:hover {
-  background: #f8fafc;
+  background: var(--bg-surface-hover);
 }
 
 .dropdown-item.active {
-  background: #eff6ff;
-  color: #2563eb;
+  background: rgba(37, 99, 235, 0.15);
+  color: #60a5fa;
 }
 
 .language-name {
@@ -177,7 +189,7 @@ const selectLanguage = (locale) => {
 }
 
 .check-icon {
-  color: #2563eb;
+  color: #60a5fa;
   flex-shrink: 0;
 }
 </style>

@@ -1,6 +1,7 @@
 <template>
   <div class="profile-menu">
     <button
+      ref="buttonRef"
       class="profile-button"
       @click="toggleDropdown"
       @blur="handleBlur"
@@ -21,55 +22,57 @@
       </svg>
     </button>
 
-    <div v-if="isDropdownOpen" class="dropdown-menu">
-      <div class="dropdown-header">
-        <div class="avatar-large">
-          {{ getInitials(currentUser.name) }}
+    <Teleport to="body">
+      <div v-if="isDropdownOpen" class="dropdown-menu" :style="dropdownStyle">
+        <div class="dropdown-header">
+          <div class="avatar-large">
+            {{ getInitials(currentUser.name) }}
+          </div>
+          <div class="user-info">
+            <div class="user-name">{{ currentUser.name }}</div>
+            <div class="user-email">{{ currentUser.email }}</div>
+          </div>
         </div>
-        <div class="user-info">
-          <div class="user-name">{{ currentUser.name }}</div>
-          <div class="user-email">{{ currentUser.email }}</div>
-        </div>
+
+        <div class="dropdown-divider"></div>
+
+        <button
+          class="dropdown-item"
+          @mousedown.prevent="showProfileDetails"
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 9C10.6569 9 12 7.65685 12 6C12 4.34315 10.6569 3 9 3C7.34315 3 6 4.34315 6 6C6 7.65685 7.34315 9 9 9Z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M15 15C15 12.7909 12.3137 11 9 11C5.68629 11 3 12.7909 3 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          {{ t('profile.profileDetails') }}
+        </button>
+
+        <button
+          class="dropdown-item"
+          @mousedown.prevent="showTasks"
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M15 3H3C2.44772 3 2 3.44772 2 4V14C2 14.5523 2.44772 15 3 15H15C15.5523 15 16 14.5523 16 14V4C16 3.44772 15.5523 3 15 3Z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M6 7L8 9L12 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          {{ t('profile.myTasks') }}
+          <span v-if="pendingTaskCount > 0" class="task-badge">{{ pendingTaskCount }}</span>
+        </button>
+
+        <div class="dropdown-divider"></div>
+
+        <button
+          class="dropdown-item logout"
+          @mousedown.prevent="handleLogout"
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M7 15H4C3.44772 15 3 14.5523 3 14V4C3 3.44772 3.44772 3 4 3H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M11 12L15 9M15 9L11 6M15 9H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          {{ t('profile.logout') }}
+        </button>
       </div>
-
-      <div class="dropdown-divider"></div>
-
-      <button
-        class="dropdown-item"
-        @mousedown.prevent="showProfileDetails"
-      >
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M9 9C10.6569 9 12 7.65685 12 6C12 4.34315 10.6569 3 9 3C7.34315 3 6 4.34315 6 6C6 7.65685 7.34315 9 9 9Z" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M15 15C15 12.7909 12.3137 11 9 11C5.68629 11 3 12.7909 3 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        {{ t('profile.profileDetails') }}
-      </button>
-
-      <button
-        class="dropdown-item"
-        @mousedown.prevent="showTasks"
-      >
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M15 3H3C2.44772 3 2 3.44772 2 4V14C2 14.5523 2.44772 15 3 15H15C15.5523 15 16 14.5523 16 14V4C16 3.44772 15.5523 3 15 3Z" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M6 7L8 9L12 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        {{ t('profile.myTasks') }}
-        <span v-if="pendingTaskCount > 0" class="task-badge">{{ pendingTaskCount }}</span>
-      </button>
-
-      <div class="dropdown-divider"></div>
-
-      <button
-        class="dropdown-item logout"
-        @mousedown.prevent="handleLogout"
-      >
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M7 15H4C3.44772 15 3 14.5523 3 14V4C3 3.44772 3.44772 3 4 3H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M11 12L15 9M15 9L11 6M15 9H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        {{ t('profile.logout') }}
-      </button>
-    </div>
+    </Teleport>
   </div>
 </template>
 
@@ -82,6 +85,8 @@ const { currentUser, logout, getInitials } = useAuth()
 const { t } = useI18n()
 
 const isDropdownOpen = ref(false)
+const buttonRef = ref(null)
+const dropdownStyle = ref({})
 const emit = defineEmits(['show-profile-details', 'show-tasks'])
 
 const pendingTaskCount = computed(() => {
@@ -89,6 +94,16 @@ const pendingTaskCount = computed(() => {
 })
 
 const toggleDropdown = () => {
+  if (!isDropdownOpen.value) {
+    // Calculate position before opening so the dropdown appears in the right place
+    const rect = buttonRef.value.getBoundingClientRect()
+    dropdownStyle.value = {
+      position: 'fixed',
+      bottom: `${window.innerHeight - rect.top}px`,
+      left: `${rect.left}px`,
+      zIndex: 1000
+    }
+  }
   isDropdownOpen.value = !isDropdownOpen.value
 }
 
@@ -124,9 +139,9 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  padding: 0.5rem 0.875rem;
-  background: white;
-  border: 1px solid #e2e8f0;
+  padding: 0.375rem;
+  background: transparent;
+  border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -134,8 +149,8 @@ const handleLogout = () => {
 }
 
 .profile-button:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: var(--bg-surface-hover);
+  border-color: #30363d;
 }
 
 .avatar {
@@ -152,15 +167,13 @@ const handleLogout = () => {
   letter-spacing: 0.025em;
 }
 
+/* Hide name and chevron — avatar-only in sidebar footer */
 .profile-name {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #0f172a;
+  display: none;
 }
 
 .chevron {
-  color: #64748b;
-  transition: transform 0.2s ease;
+  display: none;
 }
 
 .chevron-open {
@@ -168,15 +181,11 @@ const handleLogout = () => {
 }
 
 .dropdown-menu {
-  position: absolute;
-  bottom: calc(100% + 0.5rem);
-  right: 0;
   min-width: 280px;
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
   overflow: hidden;
 }
 
